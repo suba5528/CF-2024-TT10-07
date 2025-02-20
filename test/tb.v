@@ -24,7 +24,7 @@ module tb ();
 `endif
 
   // Instantiate the SPI module
-  tt_um_suba user_project (
+  tt_um_suba (
 
 `ifdef GL_TEST
       .VPWR(VPWR),
