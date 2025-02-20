@@ -8,13 +8,16 @@ You can also include images in this folder and reference them in the markdown. E
 -->
 
 ## How it works
+This Verilog module implements an SPI (Serial Peripheral Interface) Slave device. It communicates with an SPI Master, receiving data via MOSI (Master Out Slave In) and sending data via MISO (Master In Slave Out). The module uses Finite State Machines (FSMs) to control data reception and transmission.
 
-Explain how your project works
+
 
 ## How to test
 
-Explain how to use your project
+ For testin FPGA, Connect an SPI Master (like an Arduino) to the slave(FPGA) module.
+Use 4 SPI signals: cs, clock_in, mosi, and miso.
+Monitor MISO to check if data transmission is correct.
 
 ## External hardware
 
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+Basys3 FPGA board
