@@ -10,11 +10,11 @@ module tt_um_suba (
     input  wire [7:0] ui_in,    // Dedicated inputs
     output wire [7:0] uo_out,   // Dedicated outputs
     input  wire [7:0] uio_in,   // IOs: Input path
-    output wire [7:0] uio_out,  // IOs: Output path
-    output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
-    input  wire       ena,      // always 1 when the design is powered
-    input  wire       clk,      // clock
-    input  wire       rst_n     // reset_n - low to reset
+    output reg [7:0] uio_out,   // IOs: Output path
+    output reg [7:0] uio_oe,    // IOs: Enable path (active high: 0=input, 1=output)
+    input  wire       ena,      // Always 1 when the design is powered
+    input  wire       clk,      // Clock
+    input  wire       rst_n     // Reset (active low)
 );
     // Internal registers
     reg [7:0] received_data;  // Data received from MOSI
@@ -31,13 +31,17 @@ module tt_um_suba (
     wire spi_clk = clk;
     
     assign uo_out  = {7'b0, miso_out};
-    assign uio_out = 0;
-    assign uio_oe  = 0;
+    
+    // Ensure uio_out and uio_oe are correctly initialized
+    always @(*) begin
+        uio_out = 8'b0;
+        uio_oe = 8'b0;
+    end
     
     // MOSI State Machine (Receiving Data)
-    always @(negedge spi_clk) begin
+    always @(negedge spi_clk or negedge rst_n) begin
         if (!rst_n) begin
-            received_data <= 0;
+            received_data <= 8'b0;
             state_mosi <= 0;
             mosi_counter <= 7;
         end else begin
@@ -50,7 +54,7 @@ module tt_um_suba (
                 2: begin
                     received_data[mosi_counter] <= mosi;
                     if (mosi_counter == 0) state_mosi <= 3;
-                    mosi_counter <= mosi_counter - 1;
+                    else mosi_counter <= mosi_counter - 1;
                    end
                 3: state_mosi <= 0;
             endcase
@@ -58,7 +62,7 @@ module tt_um_suba (
     end
 
     // MISO State Machine (Transmitting Data)
-    always @(posedge spi_clk) begin
+    always @(posedge spi_clk or negedge rst_n) begin
         if (!rst_n) begin
             state_miso <= 0;
             miso_counter <= 7;
@@ -74,7 +78,7 @@ module tt_um_suba (
                 2: begin
                     miso_out <= transmit_data[miso_counter];
                     if (miso_counter == 0) state_miso <= 3;
-                    miso_counter <= miso_counter - 1;
+                    else miso_counter <= miso_counter - 1;
                    end
                 3: begin
                     miso_out <= 1;
@@ -85,14 +89,7 @@ module tt_um_suba (
     end
 
     // Unused input assignments to avoid warnings
-    wire _unused = &{ena, ui_in[2], ui_in[3], ui_in[4], ui_in[5], ui_in[6], ui_in[7], uio_in[7:0]};
+    wire _unused = &{ena, ui_in[7:2], uio_in[7:0]};
 
 endmodule
 
-
-
-
-   
-                 
-
-   
